@@ -8,25 +8,33 @@ services:
       - "3000:3000"
     environment:
       - DB_HOST=db
-      - DB_USER=user
-      - DB_PASSWORD=password
-      - DB_NAME=myapp_db
+      - DB_USER=user1          # Changed from 'root' to appuser
+      - DB_PASSWORD=qweQWE        # Using the user's password
+      - DB_NAME=myapp
+      - DB_ROOT_PASSWORD=qazQAZ   # Optional: for migrations
     depends_on:
       - db
+    # Wait for MySQL to be ready (optional but recommended)
+    command: sh -c "npx wait-on tcp:db:3306 && npm start"
 
   db:
-    container_name: myapp-db
+    container_name: sql-container
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_DATABASE: myapp_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: myapp
+      MYSQL_ROOT_PASSWORD: qazQAZ
+      MYSQL_USER: user1          # Changed from 'root' to appuser
+      MYSQL_PASSWORD: qweQWE       # Password for appuser
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    # Health check to ensure MySQL is ready
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
 volumes:
   db_data:
